@@ -1,0 +1,35 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: retail-service
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/retail_db
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+
+inventory:
+  api:
+    url: http://inventory-service:8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    com.agnesmaria.retail_service: DEBUG

@@ -1,42 +1,39 @@
 package com.agnesmaria.retail_service.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
+    private String sku;
+
+    @Column(nullable = false)
     private String name;
-    private String category;
-    private Double price;
-    private Integer stock;
 
-    // Constructors
-    public Product() {}
-    public Product(String name, String category, Double price, Integer stock) {
-        this.name = name;
-        this.category = category;
-        this.price = price;
-        this.stock = stock;
-    }
+    private String description;
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @Column(nullable = false)
+    private BigDecimal price;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @Column(nullable = false)
+    private Integer stock; // stok lokal di retail
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    @Column(nullable = false)
+    private boolean active = true;
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
-
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
+    private LocalDateTime updatedAt;
 }

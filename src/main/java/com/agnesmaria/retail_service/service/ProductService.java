@@ -2,29 +2,44 @@ package com.agnesmaria.retail_service.service;
 
 import com.agnesmaria.retail_service.model.Product;
 import com.agnesmaria.retail_service.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findByActiveTrue();
     }
 
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     }
 
-    public Product saveProduct(Product product) {
+    public Product getProductBySku(String sku) {
+        return productRepository.findBySku(sku)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    public Product createProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(Long id, Product updated) {
+        Product product = getProductById(id);
+        product.setName(updated.getName());
+        product.setSku(updated.getSku());
+        product.setPrice(updated.getPrice());
+        product.setActive(updated.isActive());
+        product.setDescription(updated.getDescription());
         return productRepository.save(product);
     }
 
