@@ -1,7 +1,7 @@
 package com.agnesmaria.retail_service.controller;
 
+import com.agnesmaria.retail_service.dto.OrderRequestDTO;
 import com.agnesmaria.retail_service.dto.OrderResponseDTO;
-import com.agnesmaria.retail_service.model.Order;
 import com.agnesmaria.retail_service.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,10 +34,10 @@ public class OrderController {
     @PostMapping
     @Operation(summary = "Create new order and reduce stock in retail warehouse")
     public ResponseEntity<OrderResponseDTO> createOrder(
-            @RequestBody Order order,
+            @RequestBody OrderRequestDTO request,
             @RequestParam Long warehouseId
     ) {
-        return ResponseEntity.ok(orderService.createOrder(order, warehouseId));
+        return ResponseEntity.ok(orderService.createOrderFromDTO(request, warehouseId));
     }
 
     @DeleteMapping("/{id}")

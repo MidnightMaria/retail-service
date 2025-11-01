@@ -1,7 +1,9 @@
 package com.agnesmaria.retail_service.controller;
 
 import com.agnesmaria.retail_service.dto.RetailStockAdjustRequest;
+import com.agnesmaria.retail_service.dto.RetailStockResponse;
 import com.agnesmaria.retail_service.dto.RetailStockSetRequest;
+import com.agnesmaria.retail_service.dto.RestockRequest;
 import com.agnesmaria.retail_service.model.RetailStock;
 import com.agnesmaria.retail_service.service.RetailStockService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +23,18 @@ public class RetailStockController {
 
     @GetMapping("/{productId}")
     @Operation(summary = "Get stock for product in a retail warehouse")
-    public ResponseEntity<RetailStock> get(@PathVariable Long warehouseId, @PathVariable Long productId) {
-        return ResponseEntity.ok(stockService.get(warehouseId, productId));
+    public ResponseEntity<RetailStockResponse> get(@PathVariable Long warehouseId, @PathVariable Long productId) {
+        var stock = stockService.get(warehouseId, productId);
+        return ResponseEntity.ok(
+            RetailStockResponse.builder()
+                .id(stock.getId())
+                .warehouseId(stock.getWarehouse().getId())
+                .productId(stock.getProduct().getId())
+                .productSku(stock.getProduct().getSku())
+                .productName(stock.getProduct().getName())
+                .quantity(stock.getQuantity())
+                .build()
+        );
     }
 
     @PostMapping
@@ -44,5 +56,12 @@ public class RetailStockController {
     public ResponseEntity<RetailStock> decrease(@PathVariable Long warehouseId,
                                                 @Valid @RequestBody RetailStockAdjustRequest req) {
         return ResponseEntity.ok(stockService.decrease(warehouseId, req));
+    }
+
+    @PostMapping("/restock")
+    @Operation(summary = "Request restock from central warehouse")
+    public ResponseEntity<String> requestRestock(@Valid @RequestBody RestockRequest request) {
+        stockService.requestRestock(request);
+        return ResponseEntity.ok("Restock requested successfully");
     }
 }

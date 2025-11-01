@@ -1,5 +1,7 @@
 package com.agnesmaria.retail_service.service;
 
+import com.agnesmaria.retail_service.client.InventoryClient;
+import com.agnesmaria.retail_service.dto.RestockRequest;
 import com.agnesmaria.retail_service.dto.RetailStockAdjustRequest;
 import com.agnesmaria.retail_service.dto.RetailStockSetRequest;
 import com.agnesmaria.retail_service.model.Product;
@@ -9,11 +11,15 @@ import com.agnesmaria.retail_service.repository.ProductRepository;
 import com.agnesmaria.retail_service.repository.RetailStockRepository;
 import com.agnesmaria.retail_service.repository.RetailWarehouseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetailStockService {
@@ -21,6 +27,7 @@ public class RetailStockService {
     private final RetailStockRepository stockRepository;
     private final RetailWarehouseRepository warehouseRepository;
     private final ProductRepository productRepository;
+    private final InventoryClient inventoryClient; // ✅ inject client ke service
 
     private RetailWarehouse getWarehouseOr404(Long id) {
         return warehouseRepository.findById(id)
@@ -73,5 +80,31 @@ public class RetailStockService {
     public RetailStock get(Long warehouseId, Long productId) {
         return stockRepository.findByWarehouseIdAndProductId(warehouseId, productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Retail stock not found"));
+    }
+
+    @Transactional
+    public void requestRestock(RestockRequest request) {
+        String reference = "RESTOCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        // ✅ Gunakan instance yang diinject, bukan class
+        inventoryClient.transferStock(
+                request.getFromWarehouseId(),
+                request.getToWarehouseId(),
+                request.getProductSku(),
+                request.getQuantity(),
+                reference
+        );
+
+        // Tambahkan stok di tabel retail
+        RetailStockAdjustRequest adjust = new RetailStockAdjustRequest();
+        adjust.setProductId(
+                productRepository.findBySku(request.getProductSku())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"))
+                        .getId()
+        );
+        adjust.setQuantity(request.getQuantity());
+        increase(request.getToWarehouseId(), adjust);
+
+        log.info("✅ Retail stock updated after restock request {}", reference);
     }
 }

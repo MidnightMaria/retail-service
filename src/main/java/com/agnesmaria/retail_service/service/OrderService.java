@@ -1,6 +1,7 @@
 package com.agnesmaria.retail_service.service;
 
 import com.agnesmaria.retail_service.dto.OrderItemResponseDTO;
+import com.agnesmaria.retail_service.dto.OrderRequestDTO;
 import com.agnesmaria.retail_service.dto.OrderResponseDTO;
 import com.agnesmaria.retail_service.dto.RetailStockAdjustRequest;
 import com.agnesmaria.retail_service.model.*;
@@ -26,6 +27,58 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final RetailStockService retailStockService;
+
+    @Transactional
+public OrderResponseDTO createOrderFromDTO(OrderRequestDTO request, Long warehouseId) {
+    if (request.getItems() == null || request.getItems().isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
+    }
+
+    // 🧾 Create order entity
+    Order order = new Order();
+    order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+    order.setStatus("COMPLETED");
+
+    // 🧍 Find customer
+    Customer customer = customerRepository.findById(request.getCustomerId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Customer not found with ID: " + request.getCustomerId()));
+    order.setCustomer(customer);
+    order.setCustomerName(customer.getName());
+    order.setCustomerEmail(customer.getEmail());
+
+    // 🧩 Map items
+    List<OrderItem> items = request.getItems().stream().map(i -> {
+        Product product = productRepository.findById(i.getProductId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Product not found with ID: " + i.getProductId()));
+
+        OrderItem item = new OrderItem();
+        item.setOrder(order);
+        item.setProduct(product);
+        item.setQuantity(i.getQuantity());
+        item.setUnitPrice(product.getPrice());
+        return item;
+    }).collect(Collectors.toList());
+
+    order.setItems(items);
+    order.calculateTotal();
+
+    // 💾 Save order
+    Order savedOrder = orderRepository.save(order);
+
+    // 📦 Reduce stock
+    for (OrderItem item : savedOrder.getItems()) {
+        RetailStockAdjustRequest stockRequest = new RetailStockAdjustRequest();
+        stockRequest.setProductId(item.getProduct().getId());
+        stockRequest.setQuantity(item.getQuantity());
+        retailStockService.decrease(warehouseId, stockRequest);
+        log.info("✅ Retail stock reduced for Product ID {} by {}", item.getProduct().getId(), item.getQuantity());
+    }
+
+    log.info("🧾 Order {} created successfully", savedOrder.getOrderNumber());
+    return mapToResponseDTO(savedOrder);
+}
 
     @Transactional
     public OrderResponseDTO createOrder(Order order, Long warehouseId) {
