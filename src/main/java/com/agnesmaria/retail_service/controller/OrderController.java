@@ -1,5 +1,6 @@
 package com.agnesmaria.retail_service.controller;
 
+import com.agnesmaria.retail_service.dto.OrderResponseDTO;
 import com.agnesmaria.retail_service.model.Order;
 import com.agnesmaria.retail_service.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,19 +21,19 @@ public class OrderController {
 
     @GetMapping
     @Operation(summary = "Get all orders")
-    public ResponseEntity<List<Order>> getAllOrders() {
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PostMapping
-    @Operation(summary = "Create new order and reduce stock in inventory")
-    public ResponseEntity<Order> createOrder(
+    @Operation(summary = "Create new order and reduce stock in retail warehouse")
+    public ResponseEntity<OrderResponseDTO> createOrder(
             @RequestBody Order order,
             @RequestParam Long warehouseId
     ) {

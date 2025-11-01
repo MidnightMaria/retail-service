@@ -1,8 +1,10 @@
 package com.agnesmaria.retail_service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +22,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🧩 Relasi ke customer (1 customer bisa punya banyak order)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
@@ -28,21 +29,20 @@ public class Order {
     @Column(unique = true, nullable = false)
     private String orderNumber;
 
-    // 🧾 Snapshot customer data saat transaksi (optional)
     private String customerName;
     private String customerEmail;
 
     @CreationTimestamp
     private LocalDateTime orderDate;
 
-    private String status; // e.g. PENDING, COMPLETED, CANCELLED
+    private String status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonProperty("orderItems") 
     private List<OrderItem> items;
 
     private BigDecimal totalAmount;
 
-    // 🧮 Hitung total setiap kali order dibuat / diupdate
     public void calculateTotal() {
         if (items != null && !items.isEmpty()) {
             totalAmount = items.stream()

@@ -1,9 +1,11 @@
 package com.agnesmaria.retail_service.controller;
 
+import com.agnesmaria.retail_service.dto.ProductRequest;
 import com.agnesmaria.retail_service.model.Product;
 import com.agnesmaria.retail_service.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +39,17 @@ public class ProductController {
     }
 
     @PostMapping
-    @Operation(summary = "Create new product")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    @Operation(summary = "Create a new product in retail-service")
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) {
+        Product product = Product.builder()
+                .sku(request.getSku())
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .stock(request.getStock() != null ? request.getStock() : 0)
+                .active(request.getActive())
+                .build();
+
         return ResponseEntity.ok(productService.createProduct(product));
     }
 
