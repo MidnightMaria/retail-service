@@ -1,9 +1,6 @@
 package com.agnesmaria.retail_service.controller;
 
-import com.agnesmaria.retail_service.dto.RetailStockAdjustRequest;
-import com.agnesmaria.retail_service.dto.RetailStockResponse;
-import com.agnesmaria.retail_service.dto.RetailStockSetRequest;
-import com.agnesmaria.retail_service.dto.RestockRequest;
+import com.agnesmaria.retail_service.dto.*;
 import com.agnesmaria.retail_service.model.RetailStock;
 import com.agnesmaria.retail_service.service.RetailStockService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,8 +59,23 @@ public class RetailStockController {
 
     @PostMapping("/restock")
     @Operation(summary = "Request restock from central warehouse")
-    public ResponseEntity<String> requestRestock(@Valid @RequestBody RestockRequest request) {
+    public ResponseEntity<Map<String, Object>> requestRestock(
+            @PathVariable Long warehouseId,
+            @Valid @RequestBody RestockRequest request) {
+
+        // Gunakan warehouseId dari path sebagai tujuan retail
+        request.setToWarehouseId(warehouseId);
+
+        // Panggil service untuk proses restock
         stockService.requestRestock(request);
-        return ResponseEntity.ok("Restock requested successfully");
+
+        // Kembalikan respons yang lebih informatif
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Restock requested successfully",
+                "toWarehouseId", warehouseId,
+                "productSku", request.getProductSku(),
+                "quantity", request.getQuantity()
+        ));
     }
 }

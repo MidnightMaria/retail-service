@@ -1,5 +1,11 @@
 server:
   port: 8081
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
 
 spring:
   application:
@@ -24,12 +30,24 @@ spring:
     serialization:
       INDENT_OUTPUT: true
 
+# 🔗 Konfigurasi komunikasi antar service
 inventory:
   api:
-    url: http://inventory-service:8080
+    url: ${INVENTORY_API_URL:http://inventory-service:8080}
 
+# 🧾 Logging dan debugging
 logging:
   level:
     root: INFO
-    org.springframework.web: INFO
+    org.springframework.web: DEBUG
     com.agnesmaria.retail_service: DEBUG
+
+# 🩺 Aktifkan actuator endpoint (untuk debug mapping)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    mappings:
+      enabled: true
