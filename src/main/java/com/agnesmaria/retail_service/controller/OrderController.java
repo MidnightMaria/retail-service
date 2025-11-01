@@ -2,6 +2,7 @@ package com.agnesmaria.retail_service.controller;
 
 import com.agnesmaria.retail_service.dto.OrderRequestDTO;
 import com.agnesmaria.retail_service.dto.OrderResponseDTO;
+import com.agnesmaria.retail_service.dto.OrderExportDTO;
 import com.agnesmaria.retail_service.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,13 @@ public class OrderController {
     @Operation(summary = "Get all orders")
     public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    // 🧾 Export harus di atas getById
+    @GetMapping("/export")
+    @Operation(summary = "Export all sales orders for analytics")
+    public ResponseEntity<List<OrderExportDTO>> exportOrders() {
+        return ResponseEntity.ok(orderService.exportAllOrders());
     }
 
     @GetMapping("/{id}")
