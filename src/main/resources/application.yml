@@ -12,7 +12,7 @@ spring:
     name: retail-service
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/retail_db
+    url: jdbc:postgresql://postgres:5432/${RETAIL_DB:retail_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -30,10 +30,25 @@ spring:
     serialization:
       INDENT_OUTPUT: true
 
-# 🔗 Konfigurasi komunikasi antar service
+# 🔗 Komunikasi antar service (dengan Inventory)
 inventory:
   api:
     url: ${INVENTORY_API_URL:http://inventory-service:8080}
+
+# 🩺 Actuator untuk healthcheck Docker
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings
+  endpoint:
+    health:
+      show-details: always
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 # 🧾 Logging dan debugging
 logging:
@@ -41,13 +56,7 @@ logging:
     root: INFO
     org.springframework.web: DEBUG
     com.agnesmaria.retail_service: DEBUG
-
-# 🩺 Aktifkan actuator endpoint (untuk debug mapping)
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    mappings:
-      enabled: true
+  file:
+    name: logs/retail-service.log
+app:
+  seed-data: true
