@@ -59,4 +59,4 @@ logging:
   file:
     name: logs/retail-service.log
 app:
-  seed-data: true
+  seed-data: false
