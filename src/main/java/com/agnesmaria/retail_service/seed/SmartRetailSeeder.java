@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Component
+// @Component
 @RequiredArgsConstructor
 public class SmartRetailSeeder implements CommandLineRunner {
 

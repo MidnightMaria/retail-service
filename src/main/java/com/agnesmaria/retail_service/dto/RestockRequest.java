@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RestockRequest {
 
-    private Long fromWarehouseId;  // 🏭 Gudang pusat (sumber)
-    private Long toWarehouseId;    // 🏬 Gudang retail (tujuan)
-    private String productSku;     // 🔖 SKU produk
-    private Integer quantity;      // 📦 Jumlah barang
+    private Long fromWarehouseId;  //  Gudang pusat (sumber)
+    private Long toWarehouseId;    //  Gudang retail (tujuan)
+    private String productSku;     //  SKU produk
+    private Integer quantity;      //  Jumlah barang
 }

@@ -28,13 +28,13 @@ public class RetailStockService {
     private final ProductRepository productRepository;
     private final InventoryClient inventoryClient;
 
-    // ✅ Ambil stok berdasarkan warehouse dan product
+    // Ambil stok berdasarkan warehouse dan product
     public RetailStock get(Long warehouseId, Long productId) {
         return stockRepository.findByWarehouseIdAndProductId(warehouseId, productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found"));
     }
 
-    // ✅ Set/replace stok — sekarang mendukung productId atau productSku
+    // Set/replace stok — sekarang mendukung productId atau productSku
     @Transactional
     public RetailStock setQuantity(Long warehouseId, RetailStockSetRequest req) {
         RetailWarehouse warehouse = warehouseRepository.findById(warehouseId)
@@ -48,13 +48,13 @@ public class RetailStockService {
         stock.setQuantity(req.getQuantity());
         RetailStock saved = stockRepository.save(stock);
 
-        log.info("🟢 Stock set: {} units of {} (productId={}) at warehouse {}",
+        log.info("Stock set: {} units of {} (productId={}) at warehouse {}",
                 req.getQuantity(), product.getSku(), product.getId(), warehouseId);
 
         return saved;
     }
 
-    // ✅ Tambah stok
+    // Tambah stok
     @Transactional
     public RetailStock increase(Long warehouseId, RetailStockAdjustRequest req) {
         RetailStock stock = stockRepository.findByWarehouseIdAndProductId(warehouseId, req.getProductId())
@@ -63,13 +63,13 @@ public class RetailStockService {
         stock.setQuantity(stock.getQuantity() + req.getQuantity());
         RetailStock saved = stockRepository.save(stock);
 
-        log.info("🟢 Increased stock: +{} units (warehouse={}, productId={})",
+        log.info("Increased stock: +{} units (warehouse={}, productId={})",
                 req.getQuantity(), warehouseId, req.getProductId());
 
         return saved;
     }
 
-    // ✅ Kurangi stok
+    //Kurangi stok
     @Transactional
     public RetailStock decrease(Long warehouseId, RetailStockAdjustRequest req) {
         RetailStock stock = stockRepository.findByWarehouseIdAndProductId(warehouseId, req.getProductId())
@@ -82,23 +82,23 @@ public class RetailStockService {
         stock.setQuantity(stock.getQuantity() - req.getQuantity());
         RetailStock saved = stockRepository.save(stock);
 
-        log.info("🟠 Decreased stock: -{} units (warehouse={}, productId={})",
+        log.info("Decreased stock: -{} units (warehouse={}, productId={})",
                 req.getQuantity(), warehouseId, req.getProductId());
 
         return saved;
     }
 
-    // ✅ Request restock ke inventory-service + update stok lokal retail
+    //Request restock ke inventory-service + update stok lokal retail
     @Transactional
     public void requestRestock(RestockRequest request) {
         try {
             String reference = "RESTOCK-" + UUID.randomUUID();
 
-            log.info("📦 Requesting transfer: {} units of {} (from warehouse {} → retail {})",
+            log.info("Requesting transfer: {} units of {} (from warehouse {} → retail {})",
                     request.getQuantity(), request.getProductSku(),
                     request.getFromWarehouseId(), request.getToWarehouseId());
 
-            // 1️⃣ Panggil Inventory Service untuk transfer stok pusat
+            //Panggil Inventory Service untuk transfer stok pusat
             inventoryClient.transferStock(
                     request.getFromWarehouseId(),
                     request.getToWarehouseId(),
@@ -107,9 +107,9 @@ public class RetailStockService {
                     reference
             );
 
-            log.info("✅ Transfer success on inventory-service. Syncing retail stock...");
+            log.info("Transfer success on inventory-service. Syncing retail stock...");
 
-            // 2️⃣ Update stok lokal di retail DB
+            // Update stok lokal di retail DB
             Product product = productRepository.findBySku(request.getProductSku())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -123,19 +123,19 @@ public class RetailStockService {
             stock.setQuantity(stock.getQuantity() + request.getQuantity());
             stockRepository.save(stock);
 
-            log.info("🟢 Retail stock updated successfully → +{} units of {} at warehouse {}",
+            log.info("Retail stock updated successfully → +{} units of {} at warehouse {}",
                     request.getQuantity(), request.getProductSku(), warehouse.getId());
 
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            log.error("❌ Restock failed: {}", e.getMessage(), e);
+            log.error("Restock failed: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
                     "Failed to restock from central warehouse: " + e.getMessage());
         }
     }
 
-    // 🔍 Helper untuk resolve product dari request
+    //Helper untuk resolve product dari request
     private Product resolveProduct(RetailStockSetRequest req) {
         if (req.getProductId() != null) {
             return productRepository.findById(req.getProductId())
