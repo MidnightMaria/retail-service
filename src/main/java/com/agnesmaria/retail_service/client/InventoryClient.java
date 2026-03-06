@@ -37,19 +37,19 @@ public class InventoryClient {
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
-            log.info("📤 Sending transfer request to Inventory Service: {}", payload);
+            log.info("Sending transfer request to Inventory Service: {}", payload);
 
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("✅ Transfer success: {} units of {} ({} → {})", quantity, sku, fromWarehouseId, toWarehouseId);
+                log.info("Transfer success: {} units of {} ({} → {})", quantity, sku, fromWarehouseId, toWarehouseId);
             } else {
-                log.warn("⚠️ Inventory Service returned non-OK status: {}", response.getStatusCode());
+                log.warn("Inventory Service returned non-OK status: {}", response.getStatusCode());
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Inventory Service error");
             }
 
         } catch (Exception e) {
-            log.error("❌ Inventory transfer failed: {}", e.getMessage(), e);
+            log.error("Inventory transfer failed: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Inventory Service unreachable: " + e.getMessage());
         }
     }

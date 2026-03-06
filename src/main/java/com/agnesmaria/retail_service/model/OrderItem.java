@@ -26,7 +26,7 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    // 🏬 Tambahkan relasi ke RetailWarehouse
+    // Tambahkan relasi ke RetailWarehouse
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id")
     private RetailWarehouse warehouse;

@@ -27,7 +27,7 @@ public class OrderService {
     private final RetailStockService retailStockService;
 
     /* =========================================================
-     * 🔹 Export Orders (untuk Data Science)
+     * Export Orders (untuk Data Science)
      * ========================================================= */
     @Transactional(readOnly = true)
     public List<OrderExportDTO> exportAllOrders() {
@@ -57,7 +57,7 @@ public class OrderService {
     }
 
     /* =========================================================
-     * 🔹 Create Order (from DTO)
+     * Create Order (from DTO)
      * ========================================================= */
     @Transactional
     public OrderResponseDTO createOrderFromDTO(OrderRequestDTO request, Long warehouseId) {
@@ -65,12 +65,12 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
         }
 
-        // 🧾 Buat entitas Order
+        // Buat entitas Order
         Order order = new Order();
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setStatus("COMPLETED");
 
-        // 🧍 Cari Customer
+        // Cari Customer
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer not found with ID: " + request.getCustomerId()));
@@ -78,12 +78,12 @@ public class OrderService {
         order.setCustomerName(customer.getName());
         order.setCustomerEmail(customer.getEmail());
 
-        // 🏬 Dapatkan warehouse
+        // Dapatkan warehouse
         RetailWarehouse warehouse = retailWarehouseRepository.findById(warehouseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Warehouse not found with ID: " + warehouseId));
 
-        // 🧩 Map items
+        // Map items
         List<OrderItem> items = request.getItems().stream().map(i -> {
             Product product = productRepository.findById(i.getProductId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -101,25 +101,25 @@ public class OrderService {
         order.setItems(items);
         order.calculateTotal();
 
-        // 💾 Simpan order
+        // Simpan order
         Order savedOrder = orderRepository.save(order);
 
-        // 📦 Kurangi stok retail
+        // Kurangi stok retail
         for (OrderItem item : savedOrder.getItems()) {
             RetailStockAdjustRequest stockRequest = new RetailStockAdjustRequest();
             stockRequest.setProductId(item.getProduct().getId());
             stockRequest.setQuantity(item.getQuantity());
             retailStockService.decrease(warehouseId, stockRequest);
-            log.info("✅ Stock reduced for Product ID {} by {} in warehouse {}",
+            log.info("Stock reduced for Product ID {} by {} in warehouse {}",
                     item.getProduct().getId(), item.getQuantity(), warehouse.getCode());
         }
 
-        log.info("🧾 Order {} created successfully", savedOrder.getOrderNumber());
+        log.info("Order {} created successfully", savedOrder.getOrderNumber());
         return mapToResponseDTO(savedOrder);
     }
 
     /* =========================================================
-     * 🔹 Create Order (from Entity)
+     * Create Order (from Entity)
      * ========================================================= */
     @Transactional
     public OrderResponseDTO createOrder(Order order, Long warehouseId) {
@@ -140,12 +140,12 @@ public class OrderService {
             order.setCustomerEmail(customer.getEmail());
         }
 
-        // 🏬 Ambil warehouse
+        // Ambil warehouse
         RetailWarehouse warehouse = retailWarehouseRepository.findById(warehouseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Warehouse not found with ID: " + warehouseId));
 
-        // 🧩 Link item & harga
+        // Link item & harga
         for (OrderItem item : order.getItems()) {
             if (item.getProduct() == null || item.getProduct().getId() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product ID is required for each item");
@@ -167,27 +167,27 @@ public class OrderService {
         order.calculateTotal();
         Order savedOrder = orderRepository.save(order);
 
-        // 📦 Kurangi stok
+        // Kurangi stok
         for (OrderItem item : savedOrder.getItems()) {
             try {
                 RetailStockAdjustRequest stockRequest = new RetailStockAdjustRequest();
                 stockRequest.setProductId(item.getProduct().getId());
                 stockRequest.setQuantity(item.getQuantity());
                 retailStockService.decrease(warehouseId, stockRequest);
-                log.info("✅ Retail stock reduced for Product ID {} by {}", item.getProduct().getId(), item.getQuantity());
+                log.info("Retail stock reduced for Product ID {} by {}", item.getProduct().getId(), item.getQuantity());
             } catch (ResponseStatusException e) {
-                log.error("⚠️ Failed to reduce stock for Product ID {}: {}", item.getProduct().getId(), e.getReason());
+                log.error("Failed to reduce stock for Product ID {}: {}", item.getProduct().getId(), e.getReason());
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Insufficient stock for Product ID: " + item.getProduct().getId());
             }
         }
 
-        log.info("🧾 Order {} created successfully", savedOrder.getOrderNumber());
+        log.info("Order {} created successfully", savedOrder.getOrderNumber());
         return mapToResponseDTO(savedOrder);
     }
 
     /* =========================================================
-     * 🔹 Read / Delete
+     * Read / Delete
      * ========================================================= */
     public List<OrderResponseDTO> getAllOrders() {
         return orderRepository.findAll().stream()
@@ -206,11 +206,11 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
         }
         orderRepository.deleteById(id);
-        log.info("🗑️ Order with ID {} deleted successfully", id);
+        log.info("Order with ID {} deleted successfully", id);
     }
 
     /* =========================================================
-     * 🔹 Mapping Helper
+     * Mapping Helper
      * ========================================================= */
     private OrderResponseDTO mapToResponseDTO(Order order) {
         List<OrderItemResponseDTO> items = order.getItems().stream()

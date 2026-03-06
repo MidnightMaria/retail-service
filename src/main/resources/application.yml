@@ -30,12 +30,12 @@ spring:
     serialization:
       INDENT_OUTPUT: true
 
-# 🔗 Komunikasi antar service (dengan Inventory)
+# Komunikasi antar service (dengan Inventory)
 inventory:
   api:
     url: ${INVENTORY_API_URL:http://inventory-service:8080}
 
-# 🩺 Actuator untuk healthcheck Docker
+# Actuator untuk healthcheck Docker
 management:
   endpoints:
     web:
@@ -50,7 +50,7 @@ management:
     readinessstate:
       enabled: true
 
-# 🧾 Logging dan debugging
+# Logging dan debugging
 logging:
   level:
     root: INFO

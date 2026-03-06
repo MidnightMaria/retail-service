@@ -14,5 +14,5 @@ public class RetailStockSetRequest {
     @Min(0)
     private Integer quantity; // jumlah stok yang ingin di-set atau replace
     
-    private String productSku; // ✅ optional, biar bisa by SKU juga
+    private String productSku; // optional, biar bisa by SKU juga
 }

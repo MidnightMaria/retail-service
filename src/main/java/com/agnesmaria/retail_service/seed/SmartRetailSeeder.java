@@ -31,30 +31,30 @@ public class SmartRetailSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         if (orderRepository.count() > 0) {
-            System.out.println("⚠️ SmartRetailSeeder skipped — data already exists.");
+            System.out.println("SmartRetailSeeder skipped — data already exists.");
             return;
         }
 
-        System.out.println("🚀 Running SmartRetailSeeder (auto-creating base data if missing)...");
+        System.out.println("Running SmartRetailSeeder (auto-creating base data if missing)...");
 
         List<Customer> customers = seedCustomersIfEmpty();
         List<Product> products = seedProductsIfEmpty();
         List<RetailWarehouse> warehouses = seedWarehousesIfEmpty();
 
         if (customers.isEmpty() || products.isEmpty() || warehouses.isEmpty()) {
-            System.out.println("⚠️ Still missing base data — seeding aborted.");
+            System.out.println("Still missing base data — seeding aborted.");
             return;
         }
 
         seedOrders(customers, products, warehouses, 5000);
 
-        System.out.println("✅ SmartRetailSeeder finished — orders linked with warehouses.");
+        System.out.println("SmartRetailSeeder finished — orders linked with warehouses.");
     }
 
     private List<Customer> seedCustomersIfEmpty() {
         if (customerRepository.count() > 0) return customerRepository.findAll();
 
-        System.out.println("👥 Seeding 50 customers...");
+        System.out.println("Seeding 50 customers...");
         List<Customer> customers = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             customers.add(Customer.builder()
@@ -74,7 +74,7 @@ public class SmartRetailSeeder implements CommandLineRunner {
     private List<RetailWarehouse> seedWarehousesIfEmpty() {
         if (retailWarehouseRepository.count() > 0) return retailWarehouseRepository.findAll();
 
-        System.out.println("🏬 Seeding 5 retail warehouses...");
+        System.out.println("Seeding 5 retail warehouses...");
         List<RetailWarehouse> warehouses = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             warehouses.add(RetailWarehouse.builder()
@@ -92,13 +92,13 @@ public class SmartRetailSeeder implements CommandLineRunner {
     private List<Product> seedProductsIfEmpty() {
         if (productRepository.count() > 0) return productRepository.findAll();
 
-        System.out.println("🛒 Trying to fetch products from Inventory Service...");
+        System.out.println("Trying to fetch products from Inventory Service...");
         List<Product> products = new ArrayList<>();
         try {
             RestTemplate restTemplate = new RestTemplate();
             Product[] inventoryProducts = restTemplate.getForObject(INVENTORY_API_URL + "/api/products", Product[].class);
             if (inventoryProducts != null && inventoryProducts.length > 0) {
-                System.out.println("✅ Imported " + inventoryProducts.length + " products from Inventory Service.");
+                System.out.println("Imported " + inventoryProducts.length + " products from Inventory Service.");
                 for (Product p : inventoryProducts) {
                     Product retailProduct = Product.builder()
                             .name(p.getName())
@@ -113,10 +113,10 @@ public class SmartRetailSeeder implements CommandLineRunner {
                 }
                 return productRepository.saveAll(products);
             } else {
-                System.out.println("⚠️ Inventory API returned no data, generating local products instead.");
+                System.out.println("Inventory API returned no data, generating local products instead.");
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Could not connect to Inventory API — fallback to local products.");
+            System.out.println("Could not connect to Inventory API — fallback to local products.");
         }
 
         for (int i = 0; i < 100; i++) {
@@ -179,7 +179,7 @@ public class SmartRetailSeeder implements CommandLineRunner {
         }
 
         orderRepository.saveAll(orders);
-        System.out.println("📦 Created " + orders.size() + " orders linked with warehouses.");
+        System.out.println("Created " + orders.size() + " orders linked with warehouses.");
     }
 
     private String randomStatus() {
